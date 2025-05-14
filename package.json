@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "https://gitlab.com/joychoudhury123dhn/movie-booking-system"
+    
   },
   "repository": {
     "type": "git",
