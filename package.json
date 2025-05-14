@@ -1,0 +1,19 @@
+{
+  "name": "movie-booking-system",
+  "version": "1.0.0",
+  "description": "APIs for movie booking system site",
+  "main": "app.js",
+  "scripts": {
+    "test": "https://gitlab.com/joychoudhury123dhn/movie-booking-system"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/joychoudhury123dhn/movie-booking-system.git"
+  },
+  "author": "Jayanto Choudhury",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/joychoudhury123dhn/movie-booking-system/issues"
+  },
+  "homepage": "https://gitlab.com/joychoudhury123dhn/movie-booking-system#readme"
+}
