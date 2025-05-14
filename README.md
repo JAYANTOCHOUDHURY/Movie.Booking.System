@@ -1,6 +1,6 @@
 # Movie-Booking-System
 
-
+# API for Movie booking system
 
 ## Getting started
 
