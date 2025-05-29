@@ -1,8 +1,25 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+
+
+const userRoutes = require('./routes/userRoutes.js');
+
+
 const connectDB = require('./config/my_db');
 require('dotenv').config();
 
 const app = express();
+
+function middlewareForTimeLog(req, res, next){
+  console.log("Server Interacted with: "+ new Date());
+  next();
+}
+
+app.use(middlewareForTimeLog);
+app.use(bodyParser.json());
+app.use('/api/users', userRoutes);
 
 // Connect to MongoDB
 connectDB();
