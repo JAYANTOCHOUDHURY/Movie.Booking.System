@@ -12,11 +12,12 @@ exports.signup = async function (req, res) {
 
         res.status(201).json({
             message: "User registered Succesfully",
-            userId: user.userId
+            userId: user._id
         });
     }
     catch (err) {
-        res.status(500).json({ message: "SignUp Failed", err: err.message });
+        console.error("Signup Error:", err.message);
+        res.status(500).json({ message: "Something went wrong. Please try again later.", err: err.message});
     }
 };
 
@@ -36,7 +37,7 @@ exports.login = async function(req, res){
 
         const token = jwt.sign(
             {
-                userId: user.userId, email: user.email, role: user.role
+                userId: user._id, email: user.email, role: user.role
             }, 
             process.env.JWT_SECRET, 
             {
@@ -46,7 +47,7 @@ exports.login = async function(req, res){
         res.status(200).json({
             message: "Login Successful", 
             token, 
-            userId: user.userId, 
+            userId: user._id, 
             role: user.role
         });
     }

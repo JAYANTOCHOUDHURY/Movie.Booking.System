@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 
 
 const userRoutes = require('./routes/userRoutes.js');
+const authRoute = require('./routes/authRoute.js');
+const movieRoute = require('./routes/movieRoutes.js');
 
 
 const connectDB = require('./config/my_db');
@@ -17,9 +19,12 @@ function middlewareForTimeLog(req, res, next){
   next();
 }
 
+
 app.use(middlewareForTimeLog);
 app.use(bodyParser.json());
 app.use('/api/users', userRoutes);
+app.use('/api/test', authRoute);
+app.use('/api/movies', movieRoute);
 
 // Connect to MongoDB
 connectDB();
