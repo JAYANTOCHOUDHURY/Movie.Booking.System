@@ -7,8 +7,10 @@ const movieSchema = new mongoose.Schema({
     duration: Number, 
     genre: String, 
     language: String, 
+    hall : {type: mongoose.Schema.Types.ObjectId, ref : 'Hall', required: true},
+    showTimes: [String], 
 }, 
-{timeStamps: true});
+{timestamps: true});
 
 const Movie = mongoose.model('Movie', movieSchema);
 module.exports = Movie;

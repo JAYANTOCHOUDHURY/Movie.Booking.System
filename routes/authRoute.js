@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const authenticate = require('../middleware/verifyToken');
 
-router.get('/protected', authenticate.verifyToken, (req, res) => {
-  res.json({ message: 'You have entered', user: req.user });
+const verifyToken = require('../middleware/verifyToken');
+
+router.get('/protected', verifyToken, (req, res) => {
+  res.json({ message: 'You accessed a protected route', user: req.user });
 });
 
 module.exports = router;
+
+
