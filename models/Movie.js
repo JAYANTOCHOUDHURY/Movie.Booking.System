@@ -8,7 +8,7 @@ const movieSchema = new mongoose.Schema({
     genre: String, 
     language: String, 
     hall : {type: mongoose.Schema.Types.ObjectId, ref : 'Hall', required: true},
-    showTimes: [String], 
+    showTimes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Show' }]
 }, 
 {timestamps: true});
 

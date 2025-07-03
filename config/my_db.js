@@ -1,3 +1,4 @@
+//Importing mongoose with MongoDB
 const mongoose = require('mongoose');
 require('dotenv').config();
 
@@ -11,4 +12,5 @@ const connectDB = async () => {
   }
 };
 
+//Exporting this function to use in app.js
 module.exports = connectDB;

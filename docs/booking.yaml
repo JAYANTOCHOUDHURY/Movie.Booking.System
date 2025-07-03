@@ -1,0 +1,200 @@
+paths:
+  /bookings/mybookings:
+    get:
+      summary: Get user's own bookings with optional filters
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [past, upcoming]
+          description: Filter by booking type (past or upcoming)
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          description: Start date for filtering (e.g., 2025-06-01)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          description: End date for filtering (e.g., 2025-06-30)
+        - in: query
+          name: showId
+          schema:
+            type: string
+          description: Filter by specific show ID
+      responses:
+        200:
+          description: List of user's bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    movie:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    hall:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                    show:
+                      type: object
+                      properties:
+                        startTime:
+                          type: string
+                          format: date-time
+                        endTime:
+                          type: string
+                          format: date-time
+                    numberOfSeats:
+                      type: number
+                    totalPrice:
+                      type: number
+                    bookingDate:
+                      type: string
+                      format: date-time
+        401:
+          description: Unauthorized (missing or invalid token)
+        500:
+          description: Server error
+
+  /bookings/all-bookings:
+    get:
+      summary: Get all bookings (Admin only)
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          required: false
+          description: Filter bookings by date
+        - in: query
+          name: showId
+          schema:
+            type: string
+          required: false
+          description: Filter bookings by show ID
+      responses:
+        '200':
+          description: All bookings fetched successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+
+  /bookings/book:
+    post:
+      summary: Book seats for a show (User only)
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - show
+                - seatType
+                - numberOfSeats
+                - seatsBooked
+              properties:
+                movie:
+                  type: string
+                  example: 685d787c05a259849ae01251
+                hall:
+                  type: string
+                  example: 685d77b805a259849ae0124f
+                show:
+                  type: string
+                  example: 685d79f005a259849ae01254
+                seatType:
+                  type: string
+                  enum: [normal, premium]
+                  example: normal
+                numberOfSeats:
+                  type: integer
+                  example: 2
+                seatsBooked:
+                  type: array
+                  items:
+                    type: string
+                  example: ["B1", "B2"]
+      responses:
+        '201':
+          description: Booking successful
+        '400':
+          description: Bad request or overbooking
+        '403':
+          description: Only users can book seats
+        '500':
+          description: Server error
+
+  /bookings/{bookingId}:
+    delete:
+      summary: Cancel a booking by ID (User only)
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+          description: The ID of the booking to cancel
+      responses:
+        '200':
+          description: Booking cancelled successfully
+        '403':
+          description: Unauthorized to cancel this booking
+        '404':
+          description: Booking not found
+        '500':
+          description: Server error
+
+  /bookings/seat-map/{hallId}:
+    get:
+      summary: Get the seat map of a hall for a specific show
+      tags: [Bookings]
+      parameters:
+        - in: path
+          name: hallId
+          required: true
+          schema:
+            type: string
+          description: The ID of the hall
+        - in: query
+          name: showId
+          required: false
+          schema:
+            type: string
+          description: Optional show ID to filter seat status
+      responses:
+        '200':
+          description: Seat map fetched successfully
+        '404':
+          description: Hall not found
+        '500':
+          description: Server error

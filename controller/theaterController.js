@@ -4,7 +4,7 @@ exports.createTheater = async function( req, res){
     try { 
         const {name, location} = req.body;
 
-        const newTheater = new Theater({name, location});
+        const newTheater = new Theater({name, location, owner: req.user.userId});
         await newTheater.save();
 
         res.status(201).json({message: 'Theater created Successfully', theater : newTheater});
@@ -22,4 +22,4 @@ exports.getAllTheaters = async function(req, res){
     catch(err){
         res.status(500).json({message: 'Error fetching Theaters', error: err.message});
     }
-}
+};

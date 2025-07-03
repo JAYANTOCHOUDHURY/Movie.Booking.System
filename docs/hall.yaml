@@ -1,0 +1,59 @@
+paths:
+  /halls/create:
+    post:
+      summary: Create a new hall (Theater Admin only)
+      tags:
+        - Halls
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - theater
+                - totalSeats
+                - seatTypes
+              properties:
+                name:
+                  type: string
+                  example: Hall 1
+                theater:
+                  type: string
+                  example: 685d764605a259849ae0124c
+                totalSeats:
+                  type: integer
+                  example: 30
+                seatTypes:
+                  type: object
+                  properties:
+                    premium:
+                      type: integer
+                      example: 10
+                    normal:
+                      type: integer
+                      example: 20
+                seatMap:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      seatNumber:
+                        type: string
+                        example: A1
+                      seatType:
+                        type: string
+                        enum: [normal, premium]
+                        example: normal
+      responses:
+        '201':
+          description: Hall created successfully
+        '400':
+          description: Invalid data
+        '403':
+          description: Forbidden - Only Theater Admin can create halls
+        '500':
+          description: Internal server error

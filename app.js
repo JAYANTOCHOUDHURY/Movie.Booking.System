@@ -11,6 +11,8 @@ const bookingRoutes = require('./routes/bookingRoutes.js');
 const adminRoutes = require('./routes/adminRoute.js');
 const theaterRoutes = require('./routes/theaterRoutes.js');
 const hallRoutes = require('./routes/hallRoutes');
+const showRoutes = require('./routes/showtimeRoutes.js');
+const setupSwagger = require('./swagger.js');
 
 
 
@@ -28,22 +30,24 @@ function middlewareForTimeLog(req, res, next) {
 
 app.use(middlewareForTimeLog);
 app.use(bodyParser.json());
-app.use('/api/users', userRoutes);
-app.use('/api/test', authRoute);
-app.use('/api/movies', movieRoute);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/theaters', theaterRoutes);
-app.use('/api/halls', hallRoutes);
-app.use('/api/movies', movieRoute);
+app.use('/users', userRoutes);
+app.use('/test', authRoute);
+app.use('/movies', movieRoute);
+app.use('/bookings', bookingRoutes);
+app.use('/admin', adminRoutes);
+app.use('/theaters', theaterRoutes);
+app.use('/halls', hallRoutes);
+app.use('/shows', showRoutes);
 
-// Connect to MongoDB
-connectDB();
+setupSwagger(app);
 
 // Test route
 app.get('/', (req, res) => {
   res.send('Welcome to the Movie Booking System API!');
 });
+
+// Connect to MongoDB
+connectDB();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

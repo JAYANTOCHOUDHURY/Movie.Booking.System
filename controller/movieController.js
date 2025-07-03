@@ -20,9 +20,9 @@ exports.getAllMovies = async function (req, res) {
 };
 exports.createMovie = async function (req, res) {
     try {
-        const { title, description, releaseDate, duration, genre, language, showTimes } = req.body;
+        const { title, description, releaseDate, duration, genre, language, hall, showTimes } = req.body;
         const newMovie = new Movie({
-            title, description, releaseDate, duration, genre, language, showTimes
+            title, description, releaseDate, duration, genre, language, hall, showTimes
         });
         console.log("Incoming request body:", req.body);
         await newMovie.save();
@@ -32,3 +32,43 @@ exports.createMovie = async function (req, res) {
         res.status(500).json({ message: "Error in creating movie", error: err.message })
     }
 }
+
+exports.searchMovies = async function (req, res) {
+    try {
+        const { genre, language, startDate, endDate, startTime, endTime } = req.query;
+
+        let query = {};
+        if (genre){
+            query.genre = {$regex: new RegExp(genre, 'i')};
+        }
+        if (language){
+            query.language = {$regex: new RegExp(language, 'i')};
+        }
+
+        // Filter by movie release date
+        if (startDate || endDate) {
+            query.releaseDate = {};
+            if (startDate) query.releaseDate.$gte = new Date(startDate);
+            if (endDate) query.releaseDate.$lte = new Date(endDate);
+        }
+
+        // Find movies + filter showTimes by show start/end time
+        const movies = await Movie.find(query).populate({
+            path: 'showTimes',
+            select: 'startTime endTime hall',
+            match: {
+                ...(startTime && { startTime: { $gte: new Date(startTime) } }),
+                ...(endTime && { endTime: { $lte: new Date(endTime) } })
+            }
+        });
+
+        // Filter out movies that don’t match show time filters
+        const filteredMovies = movies.filter(movie =>
+            movie.showTimes.length > 0 || (!startTime && !endTime)
+        );
+
+        res.json(filteredMovies);
+    } catch (err) {
+        res.status(500).json({ message: 'Error searching movies', error: err.message });
+    }
+};

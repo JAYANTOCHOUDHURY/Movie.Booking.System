@@ -1,0 +1,76 @@
+paths:
+  /shows/create:
+    post:
+      summary: Create a new show time (Admin only)
+      tags:
+        - ShowTimes
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - movie
+                - hall
+                - startTime
+                - endTime
+              properties:
+                movie:
+                  type: string
+                  example: 685d787c05a259849ae01251
+                hall:
+                  type: string
+                  example: 685d77b805a259849ae0124f
+                startTime:
+                  type: string
+                  format: date-time
+                  example: 2025-06-29T15:00:00
+                endTime:
+                  type: string
+                  format: date-time
+                  example: 2025-06-29T17:30:00
+      responses:
+        '201':
+          description: Show created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Show created successfully
+                  show:
+                    type: object
+        '400':
+          description: Invalid input (e.g., end time before start time)
+        '403':
+          description: Forbidden - only admin can create
+        '500':
+          description: Server error
+
+  /shows/all:
+    get:
+      summary: Get all show times
+      tags:
+        - ShowTimes
+      responses:
+        '200':
+          description: List of all show times
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: All showtimes fetched successfully
+                  shows:
+                    type: array
+                    items:
+                      type: object
+        '500':
+          description: Server error while fetching shows
