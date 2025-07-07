@@ -196,6 +196,45 @@ exports.bookSeats = async function (req, res) {
     //Saves  booking in Database
     await booking.save();
 
+    const sendEmail = require('../services/sendEmail.js');
+
+    const userEmail = req.user.email;
+    const subject = 'Booking Confirmed!';
+    const message = `Hello ${req.user.name},
+
+    Your booking for ${showDoc.movie.title} has been confirmed!
+    Date: ${new Date(showDoc.startTime).toDateString()}
+    Time: ${new Date(showDoc.startTime).toLocaleTimeString()}
+    Seat: ${seatsBooked.join(', ')}
+
+    Thank you for booking with us!
+    `;
+
+    const htmlMessage = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2 style="color: #4CAF50;"> Booking Confirmation</h2>
+        <p>Hi <strong>${req.user.name} </strong>, </p>
+        <p>Thank you for booking <strong>${showDoc.movie.title}</strong>.</p>
+        <ul>
+          <li><strong>Date:</strong> ${new Date(showDoc.startTime).toDateString()}</li>
+          <li><strong>Time:</strong> ${new Date(showDoc.startTime).toLocaleTimeString()}</li>
+          <li><strong>Seats:</strong> ${seatsBooked.join(', ')}</li>
+        </ul>
+        <p style="color: #555;">We look forward to seeing you at the show! 🎬</p>
+        <hr />
+        <p style="font-size: 12px; color: gray;">This is an automated email. Please do not reply.</p>
+      </div>
+      `;
+      await sendEmail(userEmail, subject, plainTextMessage, htmlMessage);
+
+    try {
+      await sendEmail(userEmail, subject, message);
+      console.log("Confirmation email sent successfully.");
+    }
+    catch (error) {
+      console.error("Failed to send confirmation email:", error.message);
+    }
+
     res.status(201).json({ message: 'Booking successful', booking });
   } catch (err) {
     res.status(500).json({ message: 'Booking failed', error: err.message });

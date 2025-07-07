@@ -128,13 +128,14 @@ paths:
                   example: 685d77b805a259849ae0124f
                 show:
                   type: string
+                  description: ID of the show
                   example: 685d79f005a259849ae01254
                 seatType:
                   type: string
                   enum: [normal, premium]
                   example: normal
                 numberOfSeats:
-                  type: integer
+                  type: number
                   example: 2
                 seatsBooked:
                   type: array
