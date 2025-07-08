@@ -1,8 +1,12 @@
 
 const Booking = require('../models/Booking.js');
+const User = require('../models/User.js');
 const Hall = require('../models/Hall.js');
 const Show = require('../models/ShowTime.js');
 const Movie = require('../models/Movie.js');
+const sendEmail = require('../services/sendEmail.js');
+const generateTicketPDF = require('../services/generatePdfTicket.js');
+const path = require('path');
 
 
 exports.viewTheaters = (req, res) => {
@@ -140,6 +144,10 @@ exports.bookSeats = async function (req, res) {
       return res.status(404).json({ message: "Show not found" });
     }
 
+    const hallDoc = await Hall.findById(showDoc.hall._id).populate('theater');
+
+    const userDoc = await User.findById(req.user.userId);
+
     // ✅ Pricing map
     const prices = {
       normal: 150,
@@ -148,8 +156,6 @@ exports.bookSeats = async function (req, res) {
     if (!prices[seatType]) {
       return res.status(400).json({ message: "Invalid seat type." });
     }
-
-    const hallDoc = showDoc.hall;
 
     // ✅ Check for already booked seats of same type for same show
     const alreadyBooked = await Booking.aggregate([
@@ -160,7 +166,7 @@ exports.bookSeats = async function (req, res) {
     const availableSeats = hallDoc.seatTypes[seatType] - bookedCount;
 
     if (numberOfSeats > availableSeats) {
-      return res.status(400).json({ message: `Only ${availableSeats} ${seatType} seats available. Cannot overbook.` });
+      return res.status(400).json({ message: `Only ${availableSeats} ${seatType} seats available.` });
     }
 
     // ✅ Optional: Validate that selected seats are not already booked
@@ -196,44 +202,51 @@ exports.bookSeats = async function (req, res) {
     //Saves  booking in Database
     await booking.save();
 
-    const sendEmail = require('../services/sendEmail.js');
+    const movieDoc = showDoc.movie;
+    const theaterDoc = hallDoc.theater;
 
-    const userEmail = req.user.email;
+    const userEmail = userDoc.email;
     const subject = 'Booking Confirmed!';
-    const message = `Hello ${req.user.name},
+    const message = `
+    Hello ${userDoc.name},
 
-    Your booking for ${showDoc.movie.title} has been confirmed!
+    Your booking for ${movieDoc.title} has been confirmed!
+    Movie: ${movieDoc.title}
+    Theater: ${theaterDoc.name}
+    Hall: ${hallDoc.name}
     Date: ${new Date(showDoc.startTime).toDateString()}
     Time: ${new Date(showDoc.startTime).toLocaleTimeString()}
     Seat: ${seatsBooked.join(', ')}
+    Total Price: ₹${totalPrice}
 
     Thank you for booking with us!
+    Enjoy your show!
     `;
 
     const htmlMessage = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2 style="color: #4CAF50;"> Booking Confirmation</h2>
-        <p>Hi <strong>${req.user.name} </strong>, </p>
-        <p>Thank you for booking <strong>${showDoc.movie.title}</strong>.</p>
-        <ul>
-          <li><strong>Date:</strong> ${new Date(showDoc.startTime).toDateString()}</li>
-          <li><strong>Time:</strong> ${new Date(showDoc.startTime).toLocaleTimeString()}</li>
-          <li><strong>Seats:</strong> ${seatsBooked.join(', ')}</li>
-        </ul>
-        <p style="color: #555;">We look forward to seeing you at the show! 🎬</p>
-        <hr />
-        <p style="font-size: 12px; color: gray;">This is an automated email. Please do not reply.</p>
-      </div>
-      `;
-      await sendEmail(userEmail, subject, plainTextMessage, htmlMessage);
+  <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee;">
+    <h2 style="color: #4CAF50;">Booking Confirmation</h2>
+    <p>Hello <strong>${userDoc.name}</strong>,</p>
 
-    try {
-      await sendEmail(userEmail, subject, message);
-      console.log("Confirmation email sent successfully.");
-    }
-    catch (error) {
-      console.error("Failed to send confirmation email:", error.message);
-    }
+    <p>Thank you for booking with us! Here are your booking details:</p>
+
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr><td><strong> Movie:</strong></td><td>${movieDoc.title}</td></tr>
+      <tr><td><strong> Theater:</strong></td><td>${theaterDoc.name}</td></tr>
+      <tr><td><strong> Hall:</strong></td><td>${hallDoc.name}</td></tr>
+      <tr><td><strong> Date:</strong></td><td>${new Date(booking.bookingDate).toDateString()}</td></tr>
+      <tr><td><strong> Booking Time:</strong></td><td>${new Date(booking.bookingDate).toLocaleTimeString()}</td></tr>
+      <tr><td><strong> Movie Time:</strong></td><td>${new Date(showDoc.startTime).toLocaleTimeString()}</td></tr>
+      <tr><td><strong> Seats:</strong></td><td>${seatsBooked.join(', ')}</td></tr>
+      <tr><td><strong> Total Price:</strong></td><td>₹${totalPrice}</td></tr>
+    </table>
+
+    <p style="margin-top: 20px;">Enjoy your show!</p>
+    <p style="font-size: 0.9em; color: gray;">Movie Booking System</p>
+  </div>
+  `;
+    const pdfPath = await generateTicketPDF(booking, userDoc, showDoc, movieDoc, hallDoc, theaterDoc);
+    await sendEmail(userEmail, subject, message, htmlMessage, userEmail, 'Your Movie Ticket', 'Please find your attached movie ticket.', pdfPath);
 
     res.status(201).json({ message: 'Booking successful', booking });
   } catch (err) {
