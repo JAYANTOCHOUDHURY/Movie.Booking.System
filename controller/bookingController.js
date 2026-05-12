@@ -6,8 +6,6 @@ const Show = require('../models/ShowTime.js');
 const Movie = require('../models/Movie.js');
 const sendEmail = require('../services/sendEmail.js');
 const generateTicketPDF = require('../services/generatePdfTicket.js');
-const path = require('path');
-
 
 exports.viewTheaters = (req, res) => {
   res.json({ message: 'List of theaters will come here' });
@@ -245,8 +243,8 @@ exports.bookSeats = async function (req, res) {
     <p style="font-size: 0.9em; color: gray;">Movie Booking System</p>
   </div>
   `;
-    const pdfPath = await generateTicketPDF(booking, userDoc, showDoc, movieDoc, hallDoc, theaterDoc);
-    await sendEmail(userEmail, subject, message, htmlMessage, userEmail, 'Your Movie Ticket', 'Please find your attached movie ticket.', pdfPath);
+    const pdfPath = generateTicketPDF(booking, userDoc, showDoc, showDoc.movie, hallDoc, theaterDoc);
+    await sendEmail(userEmail, subject, message, htmlMessage, req.user.email, 'Your Movie Ticket', 'Please find your attached movie ticket.', pdfPath);
 
     res.status(201).json({ message: 'Booking successful', booking });
   } catch (err) {

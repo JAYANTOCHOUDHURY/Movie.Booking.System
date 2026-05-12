@@ -8,8 +8,7 @@ function generateTicketPDF(booking, user, show, movie, hall, theater) {
     const filePath = path.join(__dirname, `../temp/ticket-${booking._id}.pdf`);
     doc.pipe(fs.createWriteStream(filePath));
 
-    doc.fontSize(20).text('Movie Ticket', { align: 'center' });
-    doc.moveDown();
+    doc.fontSize(20).text('Movie Ticket', { align: 'center' }).moveDown();
 
     doc.fontSize(14).text(`Name ${user.name}`);
     doc.text(`Email: ${user.email}`);

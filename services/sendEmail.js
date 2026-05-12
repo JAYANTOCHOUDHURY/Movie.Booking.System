@@ -1,8 +1,8 @@
 const nodemailer = require('nodemailer');
 const fs = require('fs');
 
-const sendEmail = async function(to, subject, text, html, attachmentPath){
-    try{
+const sendEmail = async function (to, subject, text, html, replyTo, altText, altDescription, attachmentPath) {
+    try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -12,18 +12,21 @@ const sendEmail = async function(to, subject, text, html, attachmentPath){
         });
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to, 
-            subject, 
+            to,
+            subject,
             text,
             html,
+            replyTo,
             attachmentPath: attachmentPath ? [{
-                filename: 'ticket.pdf', 
-                path: attachmentPath
-            }] : []
+                filename: 'ticket.pdf',
+                path: attachmentPath,
+                contentType: 'application/pdf',
+            },
+            ] : [],
         };
         const info = await transporter.sendMail(mailOptions);
         console.log("Email sent: ", info.response);
-    } catch(error){
+    } catch (error) {
         console.error("Email sent failed: ", error.message);
     }
 };
